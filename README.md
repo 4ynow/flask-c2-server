@@ -1,79 +1,91 @@
-# Advanced Flask-Based Command & Control (C2) Framework
+# Flask C2 Server
 
-A robust, lightweight Command and Control (C2) architecture featuring a Flask-driven HTTP operational server and an interactive CLI management interface. This framework supports authenticated agent lifecycle management, encrypted tasking workflows, and secure transport layers.
+A simple command-and-control server written in Flask. It has an interactive operator CLI, task queuing, result collection, TLS support, basic XOR encryption for payloads, and a kill switch. The agent component is not included for legal and safety reasons.
 
-> **Disclaimer & Safety Notice**
-> This repository is developed strictly for academic research, educational purposes, and authorized security assessments. The implant/agent source code (`agent.py`) has been intentionally omitted from this public repository to prevent misuse and strictly comply with security and hosting platform safety policies. Users are entirely responsible for their own testing environments and target authorizations.
+## Features
 
----
+- Interactive operator CLI with commands: `list`, `task`, `results`, `kill`, `clear`, `help`, `quit`
+- Agent registration with hostname, IP, and timestamps
+- Task queue: operator sets a command, agent picks it up
+- Result collection: agent sends output back, server stores it
+- TLS encryption for transport
+- XOR encryption for task and result payloads
+- Kill switch to clear all data and delete storage
+- Persistent agent and server data using JSON
 
-## Technical Overview & Features
+## Project Structure
 
-*   **Asynchronous Interactive Operator Console:** A full-featured Command Line Interface (CLI) (`c2.py`) equipped with dedicated context commands for administrative overhead and agent tasks.
-*   **Flask HTTP Restful Backend:** A scalable HTTP server (`server.py`) managing dynamic endpoints for client registration, secure heartbeats, and transactional queues.
-*   **Encrypted Payload & Tasking Workflows:** Native implementation of state-based tracking, task staging, and dynamic result aggregation, with standard **XOR obfuscation/encryption** routines for secure operational flows.
-*   **Transport Layer Security (TLS):** End-to-end payload transit encryption via HTTPS integration.
-*   **Defensive Safeguards & Emergency Kill-Switch:** Built-in mechanism to completely purge agent history, active staging queues, and database records instantly from memory upon operator signal.
-
----
-
-## Directory Infrastructure
-
-```text
-├── server.py        # Central Flask-based HTTP server managing tracking, tasks, and data ingestion.
-├── c2.py            # Operational interactive command-line suite for target administration.
-├── requirements.txt # Project dependency manifests (Flask, requests).
-└── README.md        # Technical architecture documentation.
+```
+server.py        # Flask server, handles all HTTP routes
+c2.py            # Interactive operator console
+requirements.txt # Python dependencies
+README.md        # This file
 ```
 
----
+The agent code is intentionally not included.
 
-## Installation & Deployment
+## Installation
 
-### 1. Environment Configuration
-Clone the repository and install the framework dependencies within a clean virtual environment:
+Clone the repo and install dependencies:
 
-```bash
-git clone <your-repository-url>
-cd <repository-directory>
+```
+git clone <your-repo-url>
+cd <repo-name>
 pip install -r requirements.txt
 ```
 
-### 2. Mandatory SSL/TLS Configuration
-To preserve transport security over HTTP, the server expects valid TLS configurations. Cryptographic certificates (`cert.pem`) and private keys (`key.pem`) have been omitted from the repository layout. You must explicitly generate a local self-signed key pair using OpenSSL prior to executing the runtime:
+## TLS Certificates
 
-```bash
+You need to generate a self-signed certificate and key for the server to use TLS.
+
+```
 openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -days 365 -nodes
 ```
 
-Ensure `cert.pem` and `key.pem` reside within the root workspace directory before starting the runtime environment.
+The server will look for `cert.pem` and `key.pem` in the same directory. Do not commit these files to the repo.
 
-### 3. Launching the Management Server
-Initialize the listener service by executing the main backend thread:
+## Running the Server
 
-```bash
+Start the Flask server:
+
+```
 python server.py
 ```
 
-### 4. Running the Operator Console
-In a separate terminal workspace, initiate the interactive orchestration interface to manage connected endpoints:
+The server runs on `https://127.0.0.1:4000`.
 
-```bash
+## Running the Operator CLI
+
+In a separate terminal:
+
+```
 python c2.py
 ```
 
----
+You'll see a `c2>` prompt. Type `help` for a list of commands.
 
-## Operator Console Interface Reference
+## Commands
 
-The `c2.py` operational prompt supports the following operational commands:
+| Command | Description |
+|---------|-------------|
+| `list` | Show all registered agents |
+| `task <agent_id> <command>` | Queue a command for a specific agent |
+| `results <agent_id>` | Show results for a specific agent |
+| `kill` | Clear all agents, results, tasks, and delete storage |
+| `clear` | Clear the terminal screen |
+| `help` | Show available commands |
+| `quit` | Exit the CLI |
 
-| Command | Action / Usage Description |
-| :--- | :--- |
-| `list` | Enumerate all persistently registered agents and their current check-in metrics. |
-| `task` | Staging a new XOR-encrypted operational task sequence for a specified agent ID. |
-| `results` | Query, fetch, and display ingested execution results returned by a target. |
-| `kill` | Broadcast a destructive kill-switch signal to clear active memory and operational state. |
-| `clear` | Clear the active terminal workspace screen context. |
+## Encryption
+
+The agent and server use XOR encryption with base64 encoding. The XOR key is hardcoded as `0x42`. This hides the command and output from anyone watching the traffic. It's simple, but it's not strong encryption. If you need real security, replace it with AES.
+
+## Kill Switch
+
+When the operator sends `kill` through the CLI, the server clears `agents`, `results`, and `tasks`, and deletes `c2_data.json`. The agent also has a kill command that deletes its ID file and stops running.
+
+## Disclaimer
+
+This project is for educational purposes only. Use it only on systems you own or have permission to test. The agent component is omitted to prevent misuse.
 | `help` | Display structural parameter syntax and contextual instructions. |
 | `quit` | Gracefully detach and exit the local operator control terminal. |
