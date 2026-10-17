@@ -1,6 +1,6 @@
 # Flask C2 Server
 
-A simple command-and-control server written in Flask. It has an interactive operator CLI, task queuing, result collection, TLS support, basic XOR encryption for payloads, and a kill switch. The agent component is not included for legal and safety reasons.
+A simple command-and-control server written in Flask. It has an interactive operator CLI, task queuing, result collection, TLS support, basic XOR encryption for payloads, and a kill switch. The agent component file is not included for legal and safety reasons. The server runs on local host.
 
 ## Features
 
