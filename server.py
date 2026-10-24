@@ -1,4 +1,5 @@
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 import datetime
 import json
 import os
@@ -36,6 +37,7 @@ results = {}
 tasks = {}
 
 app = Flask(__name__)
+CORS(app)
 
 def registred_agents(agent_id, hostname, ip, last_seen):
     if agent_id not in agents:
@@ -156,4 +158,4 @@ def kill_switch():
 load_data()
 
 if __name__ == "__main__":
-    app.run(debug=True, port=4000, ssl_context=("cert.pem", "key.pem"))
+    app.run(host="0.0.0.0", debug=True, port=4000, threaded=True, ssl_context=("cert.pem", "key.pem"))
